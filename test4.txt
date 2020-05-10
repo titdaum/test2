@@ -1,0 +1,10 @@
+0. https://github.com/titdaum/test2.git
+1. git config --global user.name "titdaum"
+2. git config --global user.email "titdaum@nate.com"
+1. git init
+2. git status
+3. git add .    
+4. git commit -m "test.txt파일 추가"
+5. git push origin master
+6. 가자
+7. 가자2
