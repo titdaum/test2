@@ -4,3 +4,5 @@
     2. 파일 추가/수정/삭제
     3. commit 처리
     4. git push
+    5. git에서 
+    
