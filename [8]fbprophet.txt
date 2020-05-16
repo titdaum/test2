@@ -1,1 +1,89 @@
 
+conda install -c conda-forge fbprophet
+	https://anaconda.org/conda-forge/fbprophet
+
+conda install -c plotly plotly=4.7.1
+	https://plotly.com/python/getting-started/#initialization-for-online-plotting
+
+#conda install "notebook>=5.3" "ipywidgets>=7.2"
+
+
+pandas 텍스트 입출력 및 데이터프레임 가공 라이브러리
+plotly(플라틸리) 그래프 라이브러리
+fbprophet 시계열 예측 라이브러리
+[4:]
+
+필터
+전치행렬
+df_korea=df[df['Country/Region']=='South Korea']
+df_korea=df_korea[4:]
+.reset_index().rename
+pd.to_datetime()
+
+데이터 Add
+.append([
+	{'date' : pd.to_datetime('2020-02-21'), 'confirmed':433},
+	{'date' : pd.to_datetime('2020-02-22'), 'confirmed':433}
+], ignore_index=True)
+
+Plot그래프
+fig = go.Figure()
+
+fig.add trace(
+    go.Scatter{
+       x=df_korea.date,
+       y=df_korea.confirmed,
+       name='Confirmed in Korea'
+    }
+)
+
+Facebook Prophet 예측=>데이터 가공
+df_prophet = df_korea.rename(columns={
+ 'date':'ds', # 규칙1
+ 'confirmed':'y' # 규칙2
+})
+
+df_prophet.head()
+
+
+Create a Model 
+#  모델 설정
+## 아래 설정을 한다 년/주별은 False, daily 
+## seasonality_mode = 'additive' 계절 변동의 영향이 트렌드에 더해지는형태로 나타날때 사용
+## 참고) 곱해지는 형태일때는 'multiplicative' 사용
+
+m = Prophet(
+  yearly_seasonality=False,
+  weekly_seasonality=False,
+  daily_seasonality=True,
+  seasonality_mode='additive'
+)
+
+# 모델 학습
+m.fit(df_prophet)
+
+# 예측할 기간동안의 데이터 저장 공간을 미리 확보한다
+future = m.make_future_dataframe(periods=7)
+
+future.tail(7)
+
+#미래 모델 예측
+## ds:날짜, yhat:예측값,  yhat_lower:오차를 고려한 예측 최소값, _upper 오차를 고려한 예측 최대값
+Predict
+forecast = m.predict(future)
+forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(7)
+
+# Plot Prediction
+미래의 확진자수가 과거버다 적은 이상한 결과를 보여주었다
+모델의 정확도 매우 낮다
+fig = plot_plotly(m, forecast)
+py.iplot(fig)
+
+#모델에 para 추가
+changepoint_prior_scale=0.2 # 값이 커질 수록 모델을 유연하게 만든다
+changepoint_range=0.98 #데이터 앞쪽 및 퍼센트 부분안에서 변화점을 만들 것인지 설정
+
+#Plot changepoints
+## 그래프에 변화점을 추가한다.
+fig = m.plot(forecast)
+a = add_changepoints_to_plot(fig.gca(), m, forecast)
